@@ -3,10 +3,7 @@ package webserver;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import db.DataBase;
 import model.User;
@@ -19,6 +16,8 @@ public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 
     private Socket connection;
+
+    private Map<String, String> httpRequestMap = new HashMap<>();
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
@@ -35,6 +34,9 @@ public class RequestHandler extends Thread {
             List<String> httpLines = extractLine(bufferedReader);
             System.out.println(httpLines);
             String httpRequestInfo = getHttpRequestInfo(httpLines);
+            setRequestInfoMap(httpLines);
+            System.out.println(httpRequestMap);
+
             String[] infos = httpRequestInfo.split(" ");
 
             String httpMethod = infos[0];
@@ -42,6 +44,36 @@ public class RequestHandler extends Thread {
             String url = getUrl(fullUrl);
 
             if (httpMethod.equalsIgnoreCase("GET")) {
+
+                if (url.startsWith("/user/list")) {
+
+                    DataOutputStream dos = new DataOutputStream(out);
+
+                    Map<String, String> cookie = HttpRequestUtils.parseCookies(httpRequestMap.get("Cookie"));
+
+                    if (Boolean.parseBoolean(cookie.getOrDefault("logined", "false"))) {
+                        StringBuilder stringBuilder = new StringBuilder();
+
+                        stringBuilder.append("<ll>");
+                        Collection<User> users = DataBase.findAll();
+                        for (User user : users) {
+                            stringBuilder.append("<ul>");
+                            stringBuilder.append(user.getUserId());
+                            stringBuilder.append("</ul>");
+                        }
+                        stringBuilder.append("</li>");
+
+                        byte[] body = stringBuilder.toString().getBytes();
+                        response200Header(dos, body.length);
+                        responseBody(dos, body);
+                        return;
+                    } else {
+                        byte[] body = "<script>window.location.href='http://localhost:8080/index.html'</script>".getBytes();
+                        response200Header(dos, body.length);
+                        responseBody(dos, body);
+                        return;
+                    }
+                }
 
                 byte[] body = getBody(url) != null ? getBody(url) : "Hello World".getBytes();
 
@@ -53,7 +85,7 @@ public class RequestHandler extends Thread {
 
 
             if (httpMethod.equalsIgnoreCase("POST") && url.startsWith("/user/create")) {
-                int contentLength = getContentLength(httpLines);
+                int contentLength = getContentLength();
                 String requestBody = IOUtils.readData(bufferedReader, contentLength);
                 Map<String, String> queryString = HttpRequestUtils.parseQueryString(requestBody);
                 System.out.println(queryString);
@@ -82,7 +114,7 @@ public class RequestHandler extends Thread {
             }
 
             if (httpMethod.equalsIgnoreCase("POST") && url.startsWith("/user/login")) {
-                int contentLength = getContentLength(httpLines);
+                int contentLength = getContentLength();
                 String requestBody = IOUtils.readData(bufferedReader, contentLength);
                 Map<String, String> queryString = HttpRequestUtils.parseQueryString(requestBody);
                 DataOutputStream dos = new DataOutputStream(out);
@@ -118,10 +150,17 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private int getContentLength(List<String> httpLines) {
-        String contentLength = httpLines.get(3);
-        String[] split = contentLength.split(": ");
-        return Integer.parseInt(split[1]);
+    private void setRequestInfoMap(List<String> httpLines) {
+        for (int i = 1; i < httpLines.size() - 1; i++) {
+            String text = httpLines.get(i);
+            System.out.println("text = " + text);
+            String[] tokens = text.split(": ");
+            httpRequestMap.put(tokens[0], tokens[1]);
+        }
+    }
+
+    private int getContentLength() {
+        return Integer.parseInt(httpRequestMap.get("Content-Length"));
     }
 
     private static byte[] getBody(String url) throws IOException {
