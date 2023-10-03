@@ -228,6 +228,7 @@ public class RequestHandler extends Thread {
 
     private void responseBody(DataOutputStream dos, byte[] body) {
         try {
+            dos.writeBytes(httpRequestMap.get("Accept") + "\r\n");
             dos.write(body, 0, body.length);
             dos.flush();
         } catch (IOException e) {
