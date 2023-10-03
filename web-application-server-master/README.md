@@ -15,7 +15,44 @@
 * 각 요구사항을 구현하는 것이 중요한 것이 아니라 구현 과정을 통해 학습한 내용을 인식하는 것이 배움에 중요하다. 
 
 ### 요구사항 1 - http://localhost:8080/index.html로 접속시 응답
-* 
+
+- 상대경로로 파일을 가져올 때 Java에서의 기준이되는 위치는 작업중인 프로젝트 폴더
+- ex 내 예시에선 web-application-server-master
+  
+| 입력스트림                | 출력스트림                 | 입출력대상 종류    |
+|----------------------|-----------------------|-------------|
+| FileInputStream      | FileOutputStream      | 파일          |
+| ByteArrayInputStream | ByteArrayOutputStream | 메모리(byte배열) |
+| PipedInputStream     | PipedOutputStream     | 프로세스        |
+| AudioInputStream     | AudioOutputStream     | 오디오장치       |
+
+| InputStream                           | OuputStream                             |
+|---------------------------------------|-----------------------------------------|
+| abstract int read()                   | abstract void write(int b)              |
+ | int read(byte [] b)                   | void write (byte [] b)                  |
+ | int read(byte {} b, int off, int len) | void write(byte {} b, int off, int len) |
+
+> 위에 read()의 반환타입이 byte가 아니라 int 인 이유는 read()의 반환값 범위가 0~255와 -1이기 때문이다.
+
+### InputStream관련 메소드
+
+|||
+|------|----|
+|read()|입력 스트림으로부터 1바이트를 읽어서 바이트를 리턴|
+|read(byte[] b)|입력 스트림으로부터 읽은 바이트들을 매개값으로 주어진 바이트 배열 b 에 저장하고 실제로 읽은 바이트 수를 리턴|
+|read(byte[] b, int off, int len)|입력 스트림으로부터 len 개의 바이트만큼 읽고 매개값으로 주어진 바이트 배열 b[off] 부터 len 개까지 저장. 그리고 실제로 읽은 바이트 수인 len 개를 리턴. 만약 len 개를 모두 읽지 못하면 실제로 읽은 바이트 수를 리턴|
+|close()|사용한 시스템 자원을 반납하고 입력 스트림 닫기|
+
+### OutputStream관련 메소드
+
+|||
+|---|---|
+|write(int b)|출력 스트림으로부터 1바이트를 보낸다.(b 의 끝 1바이트|
+|write(byte[] b)|출력 스트림으로부터 주어진 바이트 배열 b의 모든 바이트를 보낸다.|
+|write(byte[ ] b, int off, int len)|출력 스트림으로 주어진 바이트 배열 b[off] 부터 len 개까지의 바이트를 보낸다.|
+|flush()|버퍼에 잔류하는 모든 바이트를 출력한다.|
+|close()|사용한 시스템 자원을 반납하고 입력 스트림 닫기|
+
 
 ### 요구사항 2 - get 방식으로 회원가입
 * 
