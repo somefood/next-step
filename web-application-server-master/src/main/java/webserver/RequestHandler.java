@@ -32,10 +32,8 @@ public class RequestHandler extends Thread {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
 
             List<String> httpLines = extractLine(bufferedReader);
-            System.out.println(httpLines);
             String httpRequestInfo = getHttpRequestInfo(httpLines);
             setRequestInfoMap(httpLines);
-            System.out.println(httpRequestMap);
 
             String[] infos = httpRequestInfo.split(" ");
 
@@ -88,7 +86,6 @@ public class RequestHandler extends Thread {
                 int contentLength = getContentLength();
                 String requestBody = IOUtils.readData(bufferedReader, contentLength);
                 Map<String, String> queryString = HttpRequestUtils.parseQueryString(requestBody);
-                System.out.println(queryString);
 
                 if (queryString.size() > 0) {
                     String userId = queryString.get("userId");
@@ -101,7 +98,6 @@ public class RequestHandler extends Thread {
                             name,
                             email
                     );
-                    System.out.println(user);
                     DataBase.addUser(user);
                 }
 
@@ -153,7 +149,6 @@ public class RequestHandler extends Thread {
     private void setRequestInfoMap(List<String> httpLines) {
         for (int i = 1; i < httpLines.size() - 1; i++) {
             String text = httpLines.get(i);
-            System.out.println("text = " + text);
             String[] tokens = text.split(": ");
             httpRequestMap.put(tokens[0], tokens[1]);
         }
@@ -228,7 +223,7 @@ public class RequestHandler extends Thread {
 
     private void responseBody(DataOutputStream dos, byte[] body) {
         try {
-            dos.writeBytes(httpRequestMap.get("Accept") + "\r\n");
+            dos.writeBytes("Content-Type: " + httpRequestMap.get("Accept") + "\r\n");
             dos.write(body, 0, body.length);
             dos.flush();
         } catch (IOException e) {

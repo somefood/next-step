@@ -67,7 +67,11 @@
 * 
 
 ### 요구사항 6 - stylesheet 적용
-* 
+* Accept의 내용을 보고 
 
 ### heroku 서버에 배포 후
-* 
+
+
+## 참고
+
+- [로깅 라이브러리](https://www.youtube.com/watch?v=040Y3MBNnyw&ab_channel=%EB%B0%95%EC%9E%AC%EC%84%B1)
