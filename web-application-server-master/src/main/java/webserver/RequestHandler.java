@@ -5,9 +5,12 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.HttpRequestUtils;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -30,12 +33,23 @@ public class RequestHandler extends Thread {
             String httpRequestInfo = getHttpRequestInfo(httpLines);
             String[] infos = httpRequestInfo.split(" ");
 
-            String url = infos[1];
-            byte[] body = "Hello World".getBytes();
+            String fullUrl = infos[1];
+            String url = getUrl(fullUrl);
+            Map<String, String> queryString = HttpRequestUtils.parseQueryString(getQueryString(fullUrl));
+            System.out.println(queryString);
 
-            if (url.startsWith("/index.html")) {
-                body = Files.readAllBytes(new File("./webapp" + url).toPath());
+            if (queryString.size() > 0) {
+                User user = new User(
+                        queryString.get("userId"),
+                        queryString.get("password"),
+                        queryString.get("name"),
+                        queryString.get("email")
+                );
+
+                System.out.println(user);
             }
+
+            byte[] body = getBody(url) != null ? getBody(url) : "Hello World".getBytes();
 
             DataOutputStream dos = new DataOutputStream(out);
             response200Header(dos, body.length);
@@ -43,6 +57,27 @@ public class RequestHandler extends Thread {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private static byte[] getBody(String url) throws IOException {
+        System.out.println("url = " + url);
+        return Files.readAllBytes(new File("./webapp" + url).toPath());
+    }
+
+    private static String getUrl(String fullUrl) {
+        int delimiterIndex = fullUrl.indexOf("?");
+        if (delimiterIndex == -1) {
+            return fullUrl;
+        }
+        return fullUrl.substring(0, delimiterIndex);
+    }
+
+    private String getQueryString(String fullUrl) {
+        int delimiterIndex = fullUrl.indexOf("?");
+        if (delimiterIndex == -1) {
+            return null;
+        }
+        return fullUrl.substring(delimiterIndex + 1);
     }
 
     private static String getHttpRequestInfo(List<String> httpLines) {
