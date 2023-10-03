@@ -4,9 +4,11 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import db.DataBase;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +38,10 @@ public class RequestHandler extends Thread {
             String[] infos = httpRequestInfo.split(" ");
 
             String httpMethod = infos[0];
-            System.out.println(httpMethod);
+            String fullUrl = infos[1];
+            String url = getUrl(fullUrl);
 
             if (httpMethod.equalsIgnoreCase("GET")) {
-                String fullUrl = infos[1];
-                String url = getUrl(fullUrl);
-
 
                 byte[] body = getBody(url) != null ? getBody(url) : "Hello World".getBytes();
 
@@ -52,26 +52,65 @@ public class RequestHandler extends Thread {
             }
 
 
-            if (httpMethod.equalsIgnoreCase("POST")) {
+            if (httpMethod.equalsIgnoreCase("POST") && url.startsWith("/user/create")) {
                 int contentLength = getContentLength(httpLines);
                 String requestBody = IOUtils.readData(bufferedReader, contentLength);
                 Map<String, String> queryString = HttpRequestUtils.parseQueryString(requestBody);
                 System.out.println(queryString);
 
                 if (queryString.size() > 0) {
+                    String userId = queryString.get("userId");
+                    String password = queryString.get("password");
+                    String name = queryString.get("name");
+                    String email = queryString.get("email");
                     User user = new User(
-                            queryString.get("userId"),
-                            queryString.get("password"),
-                            queryString.get("name"),
-                            queryString.get("email")
+                            userId,
+                            password,
+                            name,
+                            email
                     );
                     System.out.println(user);
+                    DataBase.addUser(user);
                 }
 
                 byte[] body = new byte[0];
 
                 DataOutputStream dos = new DataOutputStream(out);
-                response302Header(dos, body.length);
+                response302Header(dos, "http://localhost:8080/index.html", null);
+                responseBody(dos, body);
+                return;
+            }
+
+            if (httpMethod.equalsIgnoreCase("POST") && url.startsWith("/user/login")) {
+                int contentLength = getContentLength(httpLines);
+                String requestBody = IOUtils.readData(bufferedReader, contentLength);
+                Map<String, String> queryString = HttpRequestUtils.parseQueryString(requestBody);
+                DataOutputStream dos = new DataOutputStream(out);
+
+                byte[] body;
+
+                String userId = queryString.get("userId");
+                String password = queryString.get("password");
+
+                User findUser = DataBase.findUserById(userId);
+
+                if (!findUser.getPassword().equals(password)) {
+                    body = "<script>window.location.href='http://localhost:8080/user/login_failed.html'</script>".getBytes();
+                    response200Header(
+                            dos,
+                            body.length,
+                            "Set-Cookie: logined=false"
+                    );
+                    responseBody(dos, body);
+                    return;
+                }
+
+                body = "<script>window.location.href='http://localhost:8080/index.html'</script>".getBytes();
+                response200Header(
+                        dos,
+                        body.length,
+                        "Set-Cookie: logined=true"
+                );
                 responseBody(dos, body);
             }
         } catch (IOException e) {
@@ -119,21 +158,29 @@ public class RequestHandler extends Thread {
         return lines;
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response200Header(DataOutputStream dos, int lengthOfBodyContent, String... headers) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            for (String header : headers) {
+                dos.writeBytes(header + "\r\n");
+            }
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
     }
 
-    private void response302Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response302Header(DataOutputStream dos, String location, String... headers) {
         try {
             dos.writeBytes("HTTP/1.1 302 Found \r\n");
-            dos.writeBytes("Location: http://localhost:8080/index.html\r\n");
+            dos.writeBytes("Location: "+ location + "\r\n");
+
+            for (String header : headers) {
+                dos.writeBytes(header + "\r\n");
+            }
+
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
