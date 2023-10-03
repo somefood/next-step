@@ -2,6 +2,7 @@ package webserver;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -29,118 +30,26 @@ public class RequestHandler extends Thread {
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
+            BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+            String line = br.readLine();
+            log.debug("request line : {}", line);
 
-            List<String> httpLines = extractLine(bufferedReader);
-            String httpRequestInfo = getHttpRequestInfo(httpLines);
-            setRequestInfoMap(httpLines);
-
-            String[] infos = httpRequestInfo.split(" ");
-
-            String httpMethod = infos[0];
-            String fullUrl = infos[1];
-            String url = getUrl(fullUrl);
-
-            if (httpMethod.equalsIgnoreCase("GET")) {
-
-                if (url.startsWith("/user/list")) {
-
-                    DataOutputStream dos = new DataOutputStream(out);
-
-                    Map<String, String> cookie = HttpRequestUtils.parseCookies(httpRequestMap.get("Cookie"));
-
-                    if (Boolean.parseBoolean(cookie.getOrDefault("logined", "false"))) {
-                        StringBuilder stringBuilder = new StringBuilder();
-
-                        stringBuilder.append("<ll>");
-                        Collection<User> users = DataBase.findAll();
-                        for (User user : users) {
-                            stringBuilder.append("<ul>");
-                            stringBuilder.append(user.getUserId());
-                            stringBuilder.append("</ul>");
-                        }
-                        stringBuilder.append("</li>");
-
-                        byte[] body = stringBuilder.toString().getBytes();
-                        response200Header(dos, body.length);
-                        responseBody(dos, body);
-                        return;
-                    } else {
-                        byte[] body = "<script>window.location.href='http://localhost:8080/index.html'</script>".getBytes();
-                        response200Header(dos, body.length);
-                        responseBody(dos, body);
-                        return;
-                    }
-                }
-
-                byte[] body = getBody(url) != null ? getBody(url) : "Hello World".getBytes();
-
-                DataOutputStream dos = new DataOutputStream(out);
-                response200Header(dos, body.length);
-                responseBody(dos, body);
+            if (line == null) {
                 return;
             }
 
+            String[] tokens = line.split(" ");
 
-            if (httpMethod.equalsIgnoreCase("POST") && url.startsWith("/user/create")) {
-                int contentLength = getContentLength();
-                String requestBody = IOUtils.readData(bufferedReader, contentLength);
-                Map<String, String> queryString = HttpRequestUtils.parseQueryString(requestBody);
-
-                if (queryString.size() > 0) {
-                    String userId = queryString.get("userId");
-                    String password = queryString.get("password");
-                    String name = queryString.get("name");
-                    String email = queryString.get("email");
-                    User user = new User(
-                            userId,
-                            password,
-                            name,
-                            email
-                    );
-                    DataBase.addUser(user);
-                }
-
-                byte[] body = new byte[0];
-
-                DataOutputStream dos = new DataOutputStream(out);
-                response302Header(dos, "http://localhost:8080/index.html", null);
-                responseBody(dos, body);
-                return;
+            while (!line.equals("")) {
+                line = br.readLine();
+                log.debug("header : {}", line);
             }
 
-            if (httpMethod.equalsIgnoreCase("POST") && url.startsWith("/user/login")) {
-                int contentLength = getContentLength();
-                String requestBody = IOUtils.readData(bufferedReader, contentLength);
-                Map<String, String> queryString = HttpRequestUtils.parseQueryString(requestBody);
-                DataOutputStream dos = new DataOutputStream(out);
+            DataOutputStream dos = new DataOutputStream(out);
+            byte[] body = Files.readAllBytes(new File("./webapp" + tokens[1]).toPath());
+            response200Header(dos, body.length);
+            responseBody(dos, body);
 
-                byte[] body;
-
-                String userId = queryString.get("userId");
-                String password = queryString.get("password");
-
-                User findUser = DataBase.findUserById(userId);
-
-                if (!findUser.getPassword().equals(password)) {
-                    body = "<script>window.location.href='http://localhost:8080/user/login_failed.html'</script>".getBytes();
-                    response200Header(
-                            dos,
-                            body.length,
-                            "Set-Cookie: logined=false"
-                    );
-                    responseBody(dos, body);
-                    return;
-                }
-
-                body = "<script>window.location.href='http://localhost:8080/index.html'</script>".getBytes();
-                response200Header(
-                        dos,
-                        body.length,
-                        "Set-Cookie: logined=true"
-                );
-                responseBody(dos, body);
-            }
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -223,7 +132,6 @@ public class RequestHandler extends Thread {
 
     private void responseBody(DataOutputStream dos, byte[] body) {
         try {
-            dos.writeBytes("Content-Type: " + httpRequestMap.get("Accept") + "\r\n");
             dos.write(body, 0, body.length);
             dos.flush();
         } catch (IOException e) {
