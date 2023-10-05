@@ -14,28 +14,11 @@ public class CreateUserController extends AbstractController {
     private static final Logger log = LoggerFactory.getLogger(CreateUserController.class);
 
     @Override
-    void doGet(HttpRequest request, HttpResponse response) {
-
-    }
-
-    @Override
-    void doPost(HttpRequest request, HttpResponse response) throws IOException {
-        String userId = request.getParameter("userId");
-        String password = request.getParameter("password");
-        String name = request.getParameter("name");
-        String email = request.getParameter("email");
-        User user = new User(userId, password, name, email);
-        log.debug("User : {}", user);
+    public void doPost(HttpRequest request, HttpResponse response) {
+        User user = new User(request.getParameter("userId"), request.getParameter("password"),
+                request.getParameter("name"), request.getParameter("email"));
+        log.debug("user : {}", user);
         DataBase.addUser(user);
         response.sendRedirect("/index.html");
-    }
-
-    @Override
-    public void service(HttpRequest request, HttpResponse response) throws IOException {
-        if (request.getMethod().equalsIgnoreCase("GET")) {
-            doGet(request, response);
-        } else if (request.getMethod().equalsIgnoreCase("POST")) {
-            doPost(request, response);
-        }
     }
 }

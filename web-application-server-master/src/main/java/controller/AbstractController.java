@@ -1,5 +1,6 @@
 package controller;
 
+import http.HttpMethod;
 import http.HttpRequest;
 import http.HttpResponse;
 
@@ -7,7 +8,20 @@ import java.io.IOException;
 
 public abstract class AbstractController implements Controller {
 
-    abstract void doGet(HttpRequest request, HttpResponse response) throws IOException;
+    @Override
+    public void service(HttpRequest request, HttpResponse response) {
+        HttpMethod method = request.getMethod();
 
-    abstract void doPost(HttpRequest request, HttpResponse response) throws IOException;
+        if (method.isPost()) {
+            doPost(request, response);
+        } else {
+            doGet(request, response);
+        }
+    }
+
+    protected void doPost(HttpRequest request, HttpResponse response) {
+    }
+
+    protected void doGet(HttpRequest request, HttpResponse response) {
+    }
 }

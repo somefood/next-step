@@ -1,6 +1,5 @@
 package http;
 
-import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
@@ -18,7 +17,7 @@ public class HttpRequest {
 
     private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
 
-    private String method;
+    private HttpMethod method;
     private String path;
     private Map<String, String> headers = new HashMap<>();
     private Map<String, String> params = new HashMap<>();
@@ -41,7 +40,7 @@ public class HttpRequest {
                 line = br.readLine();
             }
 
-            if ("POST".equals(method)) {
+            if (method.isPost()) {
                 String body = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
                 params = HttpRequestUtils.parseQueryString(body);
             }
@@ -54,9 +53,9 @@ public class HttpRequest {
     private void processRequestLine(String requestLine) {
         log.debug("request line : {}", requestLine);
         String[] tokens = requestLine.split(" ");
-        method = tokens[0];
+        method = HttpMethod.valueOf(tokens[0]);
 
-        if ("POST".equals(method)) {
+        if (method.isPost()) {
             path = tokens[1];
             return;
         }
@@ -72,7 +71,7 @@ public class HttpRequest {
         }
     }
 
-    public String getMethod() {
+    public HttpMethod getMethod() {
         return method;
     }
 

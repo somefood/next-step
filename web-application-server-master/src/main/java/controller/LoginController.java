@@ -12,40 +12,18 @@ import java.io.IOException;
 import java.util.Map;
 
 public class LoginController extends AbstractController {
-
     @Override
-    void doGet(HttpRequest request, HttpResponse response) throws IOException {
-
-        String userId = request.getParameter("userId");
-        String password = request.getParameter("password");
-
-        User user = DataBase.findUserById(userId);
-
-        if (user == null) {
-            response.forward("/user/login_failed.html");
-            return;
-        }
-
-        if (!user.getPassword().equals(password)) {
-            response.forward("/user/login_failed.html");
-            return;
-        }
-
-        response.addHeader("Set-Cookie", "logined=true");
-        response.sendRedirect("/index.html");
-    }
-
-    @Override
-    void doPost(HttpRequest request, HttpResponse response) {
-
-    }
-
-    @Override
-    public void service(HttpRequest request, HttpResponse response) throws IOException {
-        if (request.getMethod().equalsIgnoreCase("GET")) {
-            doGet(request, response);
-        } else if (request.getMethod().equalsIgnoreCase("POST")) {
-            doPost(request, response);
+    public void doPost(HttpRequest request, HttpResponse response) {
+        User user = DataBase.findUserById(request.getParameter("userId"));
+        if (user != null) {
+            if (user.login(request.getParameter("password"))) {
+                response.addHeader("Set-Cookie", "logined=true");
+                response.sendRedirect("/index.html");
+            } else {
+                response.sendRedirect("/user/login_failed.html");
+            }
+        } else {
+            response.sendRedirect("/user/login_failed.html");
         }
     }
 }
