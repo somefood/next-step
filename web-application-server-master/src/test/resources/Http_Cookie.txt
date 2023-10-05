@@ -1,5 +1,4 @@
-HTTP/1.1 302 Found
-Content-Type: text/html
-Set-Cookie: logined=true
-Location: /index.html
+HTTP/1.1 302 FOUND 
+Set-Cookie: logined=true 
+Location: /index.html 
 

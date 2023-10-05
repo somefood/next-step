@@ -18,91 +18,73 @@ public class HttpRequest {
 
     private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
 
-    private String url;
     private String method;
     private String path;
     private Map<String, String> headers = new HashMap<>();
-    private Map<String, String> parameters;
+    private Map<String, String> params = new HashMap<>();
 
     public HttpRequest(InputStream in) throws Exception {
-        BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-        String line = br.readLine();
-        log.info("첫 번째 line: {}", line);
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+            String line = br.readLine();
+            if (line == null) {
+                return;
+            }
 
-        if (line == null) {
+            processRequestLine(line);
+
+            line = br.readLine();
+            while (!line.equals("")) {
+                log.debug("header : {}", line);
+                String[] tokens = line.split(":");
+                headers.put(tokens[0].trim(), tokens[1].trim());
+                line = br.readLine();
+            }
+
+            if ("POST".equals(method)) {
+                String body = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
+                params = HttpRequestUtils.parseQueryString(body);
+            }
+
+        } catch (IOException io) {
+            log.error(io.getMessage());
+        }
+    }
+
+    private void processRequestLine(String requestLine) {
+        log.debug("request line : {}", requestLine);
+        String[] tokens = requestLine.split(" ");
+        method = tokens[0];
+
+        if ("POST".equals(method)) {
+            path = tokens[1];
             return;
         }
 
-        String[] requestLine = line.split(" ");
-        setMethod(requestLine);
-        log.debug("method: {}", this.method);
-
-        setUrl(requestLine);
-        log.debug("url: {}", this.url);
-
-        setPath();
-        log.debug("path: {}", this.path);
-
-        setHeaders(line, br);
-        setParameter(br);
-    }
-
-    private void setUrl(String[] requestLine) {
-        this.url = requestLine[1];
-    }
-
-    private void setMethod(String[] requestLine) {
-        this.method = requestLine[0];
+        int index = tokens[1].indexOf("?");
+        if (index == -1) {
+            path = tokens[1];
+        } else {
+            path = tokens[1].substring(0, index);
+            params = HttpRequestUtils.parseQueryString(
+                    tokens[1].substring(index + 1)
+            );
+        }
     }
 
     public String getMethod() {
-        return this.method;
+        return method;
     }
 
     public String getPath() {
-        return this.path;
+        return path;
     }
 
-    public String getHeader(String headerName) {
-        return this.headers.get(headerName);
+    public String getHeader(String name) {
+        return headers.get(name);
     }
 
-    public String getParameter(String parameterName) {
-        return this.parameters.get(parameterName);
-    }
-
-    private void setPath() {
-        if (this.method.equalsIgnoreCase("GET")) {
-            this.path = this.url.substring(0, this.url.indexOf("?"));
-        }
-
-        if (this.method.equalsIgnoreCase("POST")) {
-            this.path = this.url;
-        }
-    }
-
-    private void setHeaders(String line, BufferedReader br) throws IOException {
-        while (!line.equals("")) {
-            log.debug("header : {}", line);
-            line = br.readLine();
-            if (Strings.isNullOrEmpty(line)) {
-                return;
-            }
-            String[] headerTokens = line.split(":");
-            this.headers.put(headerTokens[0], headerTokens[1].trim());
-        }
-    }
-
-    public void setParameter(BufferedReader br) throws IOException {
-        if (this.method.equals("GET")) {
-            String queryString = this.url.substring(this.url.indexOf("?") + 1);
-            this.parameters = HttpRequestUtils.parseQueryString(queryString);
-        }
-
-        if (this.method.equals("POST")) {
-            String contentLength = this.headers.get("Content-Length");
-            String requestBody = IOUtils.readData(br, Integer.parseInt(contentLength));
-            this.parameters = HttpRequestUtils.parseQueryString(requestBody);
-        }
+    public String getParameter(String name) {
+        return params.get(name);
     }
 }
