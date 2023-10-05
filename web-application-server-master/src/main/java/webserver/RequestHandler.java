@@ -6,7 +6,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
+import com.google.common.collect.Maps;
+import controller.Controller;
+import controller.CreateUserController;
+import controller.ListUserController;
+import controller.LoginController;
 import db.DataBase;
+import http.HttpRequest;
+import http.HttpResponse;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +25,14 @@ public class RequestHandler extends Thread {
 
     private Socket connection;
 
-    private Map<String, String> httpRequestMap = new HashMap<>();
+    private static final Map<String, Controller> controllers;
+
+    static {
+        controllers = new HashMap<>();
+        controllers.put("/user/create", new CreateUserController());
+        controllers.put("/user/login", new LoginController());
+        controllers.put("/user/list", new ListUserController());
+    }
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
@@ -30,26 +44,13 @@ public class RequestHandler extends Thread {
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
-            BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-            String line = br.readLine();
-            log.debug("request line : {}", line);
+            HttpRequest request = new HttpRequest(in);
+            HttpResponse response = new HttpResponse(out);
 
-            if (line == null) {
-                return;
-            }
-
-            String[] tokens = line.split(" ");
-            boolean logined = false;
-            int contentLength = 0;
-            while (!line.equals("")) {
-                log.debug("header : {}", line);
-                line = br.readLine();
-                if (line.contains("Content-Length")) {
-                    contentLength = getContentLength(line);
-                }
-
-                if (line.contains("Cookie")) {
-                    logined = isLogin(line);
+            for (String controllerPath : controllers.keySet()) {
+                if (controllerPath.equals(request.getPath())) {
+                    Controller controller = controllers.get(controllerPath);
+                    controller.service(request, response);
                 }
             }
 
@@ -106,7 +107,7 @@ public class RequestHandler extends Thread {
                 responseResource(out, url);
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error(e.getMessage());
         }
     }
