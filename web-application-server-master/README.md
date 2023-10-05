@@ -1,3 +1,7 @@
+## 참고
+
+- [로깅 라이브러리](https://www.youtube.com/watch?v=040Y3MBNnyw&ab_channel=%EB%B0%95%EC%9E%AC%EC%84%B1)
+
 # 실습을 위한 개발 환경 세팅
 * https://github.com/slipp/web-application-server 프로젝트를 자신의 계정으로 Fork한다. Github 우측 상단의 Fork 버튼을 클릭하면 자신의 계정으로 Fork된다.
 * Fork한 프로젝트를 eclipse 또는 터미널에서 clone 한다.
@@ -71,7 +75,28 @@
 
 ### heroku 서버에 배포 후
 
+## 5장
 
-## 참고
+- abstract class에서 인터페이스 내용을 구현하고 추상 메서드를 실행할 수 있다. (디폴트 메서드 기법)
+- 아래 doPost나 doGet은 abstract으로 빼지말고 일부러 공백을 두고, 하위 클래스에서 오버라이딩하면서 굳이 구현 안 하게 둘 수 있다.
+```java
+public abstract class AbstractController implements Controller {
 
-- [로깅 라이브러리](https://www.youtube.com/watch?v=040Y3MBNnyw&ab_channel=%EB%B0%95%EC%9E%AC%EC%84%B1)
+ @Override
+ public void service(HttpRequest request, HttpResponse response) {
+  HttpMethod method = request.getMethod();
+
+  if (method.isPost()) {
+   doPost(request, response);
+  } else {
+   doGet(request, response);
+  }
+ }
+
+ protected void doPost(HttpRequest request, HttpResponse response) {
+ }
+
+ protected void doGet(HttpRequest request, HttpResponse response) {
+ }
+}
+```
