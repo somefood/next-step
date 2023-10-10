@@ -16,6 +16,7 @@ import core.jdbc.ConnectionManager;
 public class ContextLoaderListener implements ServletContextListener {
     private static final Logger logger = LoggerFactory.getLogger(ContextLoaderListener.class);
 
+    // 톰캣 서버가 실행할 때 메서드를 호출해서 초기화 작업을 할 수 있음
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
