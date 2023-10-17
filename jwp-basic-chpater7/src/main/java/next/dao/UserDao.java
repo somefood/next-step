@@ -12,40 +12,32 @@ import next.model.User;
 
 public class UserDao {
     public void insert(User user) throws SQLException {
-        InsertJdbcTemplate jdbcTemplate = new InsertJdbcTemplate() {
-
+        JdbcTemplate jdbcTemplate = new JdbcTemplate() {
             @Override
-            String createQueryForInsert() {
-                return "INSERT INTO USERS VALUES (?, ?, ?, ?)";
-            }
-
-            @Override
-            void setValuesForInsert(User user, PreparedStatement pstmt) throws SQLException {
+            void setValues(PreparedStatement pstmt) throws SQLException {
                 pstmt.setString(1, user.getUserId());
                 pstmt.setString(2, user.getPassword());
                 pstmt.setString(3, user.getName());
                 pstmt.setString(4, user.getEmail());
             }
         };
-        jdbcTemplate.insert(user);
+        String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
+        jdbcTemplate.update(sql);
     }
 
     public void update(User user) throws SQLException {
-        UpdateJdbcTemplate jdbcTemplate = new UpdateJdbcTemplate() {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate() {
             @Override
-            void setValuesForUpdate(User user, PreparedStatement pstmt) throws SQLException {
+            void setValues(PreparedStatement pstmt) throws SQLException {
                 pstmt.setString(1, user.getPassword());
                 pstmt.setString(2, user.getName());
                 pstmt.setString(3, user.getEmail());
                 pstmt.setString(4, user.getUserId());
             }
-
-            @Override
-            String createQueryForUpdate() {
-                return "UPDATE users SET password = ?, name = ?, email = ? WHERE userId = ?";
-            }
         };
-        jdbcTemplate.update(user);
+
+        String sql = "UPDATE users SET password = ?, name = ?, email = ? WHERE userId = ?";
+        jdbcTemplate.update(sql);
     }
 
     public List<User> findAll() throws SQLException {
