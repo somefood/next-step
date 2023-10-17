@@ -12,45 +12,13 @@ import next.model.User;
 
 public class UserDao {
     public void insert(User user) throws SQLException {
-        Connection con = null;
-        PreparedStatement pstmt = null;
-        try {
-            con = ConnectionManager.getConnection();
-            String sql = createQueryForInsert();
-            pstmt = con.prepareStatement(sql);
-            setValuesForInsert(user, pstmt);
-
-            pstmt.executeUpdate();
-        } finally {
-            if (pstmt != null) {
-                pstmt.close();
-            }
-
-            if (con != null) {
-                con.close();
-            }
-        }
+        InsertJdbcTemplate jdbcTemplate = new InsertJdbcTemplate();
+        jdbcTemplate.insert(user, this);
     }
 
     public void update(User user) throws SQLException {
-        Connection con = null;
-        PreparedStatement pstmt = null;
-        try {
-            con = ConnectionManager.getConnection();
-            String sql = createQueryForUpdate();
-            pstmt = con.prepareStatement(sql);
-
-            setValuesForUpdate(user, pstmt);
-
-            pstmt.executeUpdate();
-        } finally {
-            if (pstmt != null) {
-                pstmt.close();
-            }
-            if (con != null) {
-                con.close();
-            }
-        }
+        UpdateJdbcTemplate jdbcTemplate = new UpdateJdbcTemplate();
+        jdbcTemplate.update(user, this);
     }
 
     public List<User> findAll() throws SQLException {
@@ -121,22 +89,22 @@ public class UserDao {
         }
     }
 
-    private String createQueryForInsert() {
+    String createQueryForInsert() {
         return "INSERT INTO USERS VALUES (?, ?, ?, ?)";
     }
 
-    private void setValuesForInsert(User user, PreparedStatement pstmt) throws SQLException {
+    void setValuesForInsert(User user, PreparedStatement pstmt) throws SQLException {
         pstmt.setString(1, user.getUserId());
         pstmt.setString(2, user.getPassword());
         pstmt.setString(3, user.getName());
         pstmt.setString(4, user.getEmail());
     }
 
-    private static String createQueryForUpdate() {
+    String createQueryForUpdate() {
         return "UPDATE users SET password = ?, name = ?, email = ? WHERE userId = ?";
     }
 
-    private static void setValuesForUpdate(User user, PreparedStatement pstmt) throws SQLException {
+    void setValuesForUpdate(User user, PreparedStatement pstmt) throws SQLException {
         pstmt.setString(1, user.getPassword());
         pstmt.setString(2, user.getName());
         pstmt.setString(3, user.getEmail());
