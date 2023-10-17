@@ -13,6 +13,7 @@ import next.model.User;
 public class UserDao {
     public void insert(User user) throws SQLException {
         JdbcTemplate jdbcTemplate = new JdbcTemplate() {
+
             @Override
             void setValues(PreparedStatement pstmt) throws SQLException {
                 pstmt.setString(1, user.getUserId());
