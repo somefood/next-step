@@ -1,6 +1,7 @@
 package next.dao;
 
 import core.jdbc.ConnectionManager;
+import next.exception.DataAccessException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,34 +12,23 @@ import java.util.List;
 
 public class JdbcTemplate {
 
-    public void update(String sql, PreparedStatementSetter pss) throws SQLException {
-        Connection con = null;
-        PreparedStatement pstmt = null;
-        try {
-            con = ConnectionManager.getConnection();
-            pstmt = con.prepareStatement(sql);
+    public void update(String sql, PreparedStatementSetter pss) throws DataAccessException {
+        try (Connection conn = ConnectionManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
             pss.setValues(pstmt);
-
             pstmt.executeUpdate();
-        } finally {
-            if (pstmt != null) {
-                pstmt.close();
-            }
-
-            if (con != null) {
-                con.close();
-            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
         }
     }
 
     @SuppressWarnings("rawtypes")
     public List query(String sql, PreparedStatementSetter pss, RowMapper rowMapper) throws SQLException {
-        Connection con = null;
-        PreparedStatement pstmt = null;
         ResultSet rs = null;
-        try {
-            con = ConnectionManager.getConnection();
-            pstmt = con.prepareStatement(sql);
+        try (Connection conn = ConnectionManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
             pss.setValues(pstmt);
 
             rs = pstmt.executeQuery();
@@ -48,18 +38,11 @@ public class JdbcTemplate {
                 result.add(rowMapper.mapRow(rs));
             }
             return result;
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
         } finally {
             if (rs != null) {
                 rs.close();
-            }
-
-            if (pstmt != null) {
-                pstmt.close();
-            }
-
-            if (con != null) {
-                pstmt.close();
-
             }
         }
     }
