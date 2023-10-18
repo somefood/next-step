@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class JdbcTemplate {
+public class JdbcTemplate {
 
     public void update(String sql, PreparedStatementSetter pss) throws SQLException {
         Connection con = null;
