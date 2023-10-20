@@ -1,5 +1,6 @@
 package next.model;
 
+import java.sql.Date;
 import java.time.LocalDateTime;
 
 public class Answer {
@@ -10,11 +11,12 @@ public class Answer {
 
     private String contents;
 
-    private LocalDateTime createdDate;
+    private Date createdDate;
 
     private Long questionId;
 
-    public Answer(String writer, String contents, LocalDateTime createdDate, Long questionId) {
+    public Answer(Long answerId, String writer, String contents, Date createdDate, Long questionId) {
+        this.answerId = answerId;
         this.writer = writer;
         this.contents = contents;
         this.createdDate = createdDate;
@@ -33,7 +35,7 @@ public class Answer {
         return contents;
     }
 
-    public LocalDateTime getCreatedDate() {
+    public Date getCreatedDate() {
         return createdDate;
     }
 
