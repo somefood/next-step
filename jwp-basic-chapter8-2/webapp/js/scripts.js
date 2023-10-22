@@ -41,16 +41,18 @@ $(".qna-comment").click(deleteAnswer);
 function deleteAnswer(e) {
   e.preventDefault();
 
-  let serialize = $(e.target).children(".form-delete").serialize();
+  let queryString = $(e.target).parent().serialize();
 
-  console.log(serialize);
+  console.log(queryString);
 
-  // $.ajax({
-  //   type: "post",
-  //   url: "/api/qna/deleteAnswer",
-  //   data: queryString,
-  //   dataType: "json",
-  //   error: onError,
-  //   success: onSuccess,
-  // })
+  $.ajax({
+    type: "post",
+    url: "/api/qna/deleteAnswer",
+    data: queryString,
+    dataType: "json",
+    error: onError,
+    success: function (json, status) {
+      console.log(json);
+    },
+  })
 }
