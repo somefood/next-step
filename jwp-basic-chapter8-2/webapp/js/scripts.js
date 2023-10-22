@@ -35,3 +35,22 @@ function onError(xhr, status) {
 }
 
 $(".answerWrite input[type=submit]").click(addAnswer);
+
+$(".qna-comment").click(deleteAnswer);
+
+function deleteAnswer(e) {
+  e.preventDefault();
+
+  let serialize = $(e.target).children(".form-delete").serialize();
+
+  console.log(serialize);
+
+  // $.ajax({
+  //   type: "post",
+  //   url: "/api/qna/deleteAnswer",
+  //   data: queryString,
+  //   dataType: "json",
+  //   error: onError,
+  //   success: onSuccess,
+  // })
+}
