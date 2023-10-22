@@ -1,12 +1,4 @@
-String.prototype.format = function() {
-  var args = arguments;
-  return this.replace(/{(\d+)}/g, function(match, number) {
-    return typeof args[number] != 'undefined'
-        ? args[number]
-        : match
-        ;
-  });
-};
+$(".answerWrite input[type=submit]").click(addAnswer);
 
 function addAnswer(e) {
   e.preventDefault();
@@ -23,7 +15,6 @@ function addAnswer(e) {
   })
 }
 
-
 function onSuccess(json, status) {
   let answerTemplate = $("#answerTemplate").html();
   let template = answerTemplate.format(json.writer, new Date(json.createdDate), json.contents, json.answerId);
@@ -34,26 +25,36 @@ function onError(xhr, status) {
   alert("error");
 }
 
-$(".answerWrite input[type=submit]").click(addAnswer);
-
-$(".qna-comment").click(deleteAnswer);
+$(".qna-comment").on("click", ".form-delete", deleteAnswer);
 
 function deleteAnswer(e) {
   e.preventDefault();
 
-  let queryString = $(e.target).parent().serialize();
-
-  console.log(queryString);
+  var deleteBtn = $(this);
+  var queryString = deleteBtn.closest("form").serialize();
 
   $.ajax({
-    type: "post",
+    type: 'post',
     url: "/api/qna/deleteAnswer",
     data: queryString,
-    dataType: "json",
-    error: onError,
-    success: function (json, status) {
-      console.log(json);
-      $(e.target).closest("article").remove();
+    dataType: 'json',
+    error: function (xhr, status) {
+      alert("error");
     },
-  })
+    success: function (json, status) {
+      if (json.status) {
+        deleteBtn.closest('article').remove();
+      }
+    }
+  });
 }
+
+String.prototype.format = function() {
+  var args = arguments;
+  return this.replace(/{(\d+)}/g, function(match, number) {
+    return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+        ;
+  });
+};
