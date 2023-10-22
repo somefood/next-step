@@ -53,6 +53,7 @@ function deleteAnswer(e) {
     error: onError,
     success: function (json, status) {
       console.log(json);
+      $(e.target).closest("article").remove();
     },
   })
 }
