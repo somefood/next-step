@@ -8,3 +8,30 @@ String.prototype.format = function() {
   });
 };
 
+function addAnswer(e) {
+  e.preventDefault();
+
+  let queryString = $("form[name=answer]").serialize();
+
+  $.ajax({
+    type: "post",
+    url: "/api/qna/addAnswer",
+    data: queryString,
+    dataType: "json",
+    error: onError,
+    success: onSuccess,
+  })
+}
+
+
+function onSuccess(json, status) {
+  let answerTemplate = $("#answerTemplate").html();
+  let template = answerTemplate.format(json.writer, new Date(json.createdDate), json.contents, json.answerId);
+  $(".qna-comment-slipp-articles").prepend(template);
+}
+
+function onError(xhr, status) {
+  alert("error");
+}
+
+$(".answerWrite input[type=submit]").click(addAnswer);
