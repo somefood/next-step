@@ -10,13 +10,20 @@
 <body>
 <%@ include file="/include/navigation.jspf" %>
 
+<c:if test="${empty user}">
+    <script>
+      alert("로그인 해주세요!");
+      window.location.href = "/users/loginForm";
+    </script>
+</c:if>
+
 <div class="container" id="main">
    <div class="col-md-12 col-sm-12 col-lg-10 col-lg-offset-1">
       <div class="panel panel-default content-main">
           <form name="question" method="post" action="/qna/create">
               <div class="form-group">
                   <label for="writer">글쓴이</label>
-                  <input class="form-control" id="writer" name="writer" placeholder="글쓴이"/>
+                  <input class="form-control" id="writer" name="writer" readonly value="${user.name}" placeholder="글쓴이"/>
               </div>
               <div class="form-group">
                   <label for="title">제목</label>
