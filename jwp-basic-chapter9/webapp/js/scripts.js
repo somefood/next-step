@@ -38,3 +38,28 @@ String.prototype.format = function() {
         ;
   });
 };
+
+let formDeletes = document.querySelectorAll(".qna-comment .link-delete-article");
+
+formDeletes.forEach((element) => {
+  element.addEventListener("click", (event) => {
+    event.preventDefault();
+    let currentTarget = event.target;
+    console.log(currentTarget);
+    let form = currentTarget.parentElement;
+
+    let queryString = $(form).serialize();
+
+    $.ajax({
+      type: 'post',
+      url: '/api/qna/deleteAnswer',
+      data: queryString,
+      dataType: 'json',
+      error: onError,
+      success: function (json, status) {
+        $(currentTarget).closest("article").remove();
+        document.querySelector(".qna-comment-count strong").innerText = document.querySelector(".qna-comment-count strong").innerText - 1;
+      },
+    });
+  });
+});
