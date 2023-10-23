@@ -21,6 +21,8 @@ function onSuccess(json, status){
   var answerTemplate = $("#answerTemplate").html();
   var template = answerTemplate.format(answer.writer, new Date(answer.createdDate), answer.contents, answer.answerId, answer.answerId);
   $(".qna-comment-slipp-articles").prepend(template);
+
+  document.querySelector(".qna-comment-count strong").innerText = json.answerCount;
 }
 
 function onError(xhr, status) {

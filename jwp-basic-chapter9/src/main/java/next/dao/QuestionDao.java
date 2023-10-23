@@ -7,10 +7,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 
-import core.jdbc.JdbcTemplate;
-import core.jdbc.KeyHolder;
-import core.jdbc.PreparedStatementCreator;
-import core.jdbc.RowMapper;
+import core.jdbc.*;
 import next.model.Question;
 
 public class QuestionDao {
@@ -67,5 +64,26 @@ public class QuestionDao {
         };
 
         return jdbcTemplate.queryForObject(sql, rm, questionId);
+    }
+
+    public void update(Question question) {
+        String sql = "UPDATE QUESTIONS SET " +
+                "writer = ?, " +
+                "title = ?, " +
+                "contents = ?, " +
+                "countOfAnswer = ? " +
+                "WHERE questionId = ?";
+
+
+        JdbcTemplate jdbcTemplate = new JdbcTemplate();
+        PreparedStatementSetter pss = pstmt -> {
+            pstmt.setString(1, question.getWriter());
+            pstmt.setString(2, question.getTitle());
+            pstmt.setString(3, question.getContents());
+            pstmt.setInt(4, question.getCountOfComment());
+            pstmt.setLong(5, question.getQuestionId());
+        };
+
+        jdbcTemplate.update(sql, pss);
     }
 }
