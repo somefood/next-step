@@ -88,4 +88,8 @@ public class User {
     public String toString() {
         return "User [userId=" + userId + ", name=" + name + ", email=" + email + "]";
     }
+
+    public boolean isOwner(Question findQuestion) {
+        return findQuestion.getWriter().equals(getName());
+    }
 }

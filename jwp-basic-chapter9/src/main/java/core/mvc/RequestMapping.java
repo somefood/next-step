@@ -3,6 +3,7 @@ package core.mvc;
 import java.util.HashMap;
 import java.util.Map;
 
+import next.controller.qna.ShowEditController;
 import next.controller.HomeController;
 import next.controller.qna.*;
 import next.controller.user.CreateUserController;
@@ -34,6 +35,8 @@ public class RequestMapping {
         mappings.put("/qna/form", new ForwardController("/qna/form.jsp"));
         mappings.put("/qna/show", new ShowController());
         mappings.put("/qna/create", new AddQuestionController());
+        mappings.put("/qna/edit/show", new ShowEditController());
+        mappings.put("/qna/edit", new EditController());
         mappings.put("/api/qna/addAnswer", new AddAnswerController());
         mappings.put("/api/qna/deleteAnswer", new DeleteAnswerController());
         mappings.put("/api/qna/list", new MobileQnaShowController());
