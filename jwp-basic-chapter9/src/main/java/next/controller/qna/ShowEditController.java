@@ -17,7 +17,7 @@ public class ShowEditController extends AbstractController {
 
         Long questionId = Long.parseLong(request.getParameter("questionId"));
 
-        QuestionDao questionDao = new QuestionDao();
+        QuestionDao questionDao = QuestionDao.getQuestionDao();
         Question findQuestion = questionDao.findById(questionId);
 
         return jspView("/qna/editForm.jsp").addObject("question", findQuestion);

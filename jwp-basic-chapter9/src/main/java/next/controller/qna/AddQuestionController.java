@@ -14,7 +14,7 @@ public class AddQuestionController extends AbstractController {
     @Override
     public ModelAndView execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        QuestionDao questionDao = new QuestionDao();
+        QuestionDao questionDao = QuestionDao.getQuestionDao();
 
         Question newQuestion = new Question(
                 request.getParameter("writer"),

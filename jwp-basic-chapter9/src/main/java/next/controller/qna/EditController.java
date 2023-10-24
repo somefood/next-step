@@ -16,7 +16,7 @@ public class EditController extends AbstractController {
     public ModelAndView execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Long questionId = Long.parseLong(request.getParameter("questionId"));
 
-        QuestionDao questionDao = new QuestionDao();
+        QuestionDao questionDao = QuestionDao.getQuestionDao();
         Question findQuestion = questionDao.findById(questionId);
 
         HttpSession session = request.getSession();
