@@ -1,6 +1,7 @@
 package core.mvc;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -21,7 +22,17 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         rm = new RequestMapping();
-        rm.initMapping();
+        try {
+            rm.initMapping();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

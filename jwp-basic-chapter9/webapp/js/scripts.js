@@ -63,3 +63,13 @@ formDeletes.forEach((element) => {
     });
   });
 });
+//
+//
+// let articleDeleteButton = document.querySelector(".content-main .link-delete-article");
+// articleDeleteButton.addEventListener("click", (e) => {
+//   e.preventDefault();
+//
+//   let deleteForm = articleDeleteButton.closest("form");
+//
+//   $(deleteForm);
+// });
