@@ -25,9 +25,18 @@ import next.controller.user.ProfileController;
 import next.controller.user.UpdateFormUserController;
 import next.controller.user.UpdateUserController;
 
-public class LegacyHandlerMapping {
+import javax.servlet.http.HttpServletRequest;
+
+public class LegacyHandlerMapping implements HandlerMapping {
+
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
     private Map<String, Controller> mappings = new HashMap<>();
+
+    @Override
+    public boolean isSupport(HttpServletRequest request) {
+        Controller controller = findController(request.getRequestURI());
+        return controller != null;
+    }
 
     void initMapping() {
         mappings.put("/", new HomeController());

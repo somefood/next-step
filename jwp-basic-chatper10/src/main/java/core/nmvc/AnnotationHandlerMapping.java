@@ -11,12 +11,19 @@ import com.google.common.collect.Maps;
 import core.annotation.Controller;
 import core.annotation.RequestMapping;
 import core.annotation.RequestMethod;
+import core.mvc.HandlerMapping;
 import org.reflections.Reflections;
 
-public class AnnotationHandlerMapping {
+public class AnnotationHandlerMapping implements HandlerMapping {
     private Object[] basePackage;
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
+
+    @Override
+    public boolean isSupport(HttpServletRequest request) {
+        HandlerExecution handler = getHandler(request);
+        return handler != null;
+    }
 
     public AnnotationHandlerMapping(Object... basePackage) {
         this.basePackage = basePackage;

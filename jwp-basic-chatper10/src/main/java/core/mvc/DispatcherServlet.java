@@ -1,6 +1,8 @@
 package core.mvc;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -18,6 +20,8 @@ public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
 
+    private List<HandlerMapping> handlerMappings = new ArrayList<>();
+    private List<HandlerAdapter> handlerAdapters = new ArrayList<>();
     private LegacyHandlerMapping lhm;
     private AnnotationHandlerMapping ahm;
 
@@ -27,11 +31,23 @@ public class DispatcherServlet extends HttpServlet {
         lhm.initMapping();
         ahm = new AnnotationHandlerMapping("next.controller");
         ahm.initialize();
+
+        handlerMappings.add(lhm);
+        handlerMappings.add(ahm);
     }
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
+            ModelAndView mav = null;
+            for (HandlerMapping handlerMapping : handlerMappings) {
+                if (handlerMapping.isSupport(req)) {
+
+                }
+            }
+            assert mav != null;
+            render(req, resp, mav);
+
             Controller controller = lhm.findController(req.getRequestURI());
             if (controller != null) {
                 render(req, resp, controller.execute(req, resp));
