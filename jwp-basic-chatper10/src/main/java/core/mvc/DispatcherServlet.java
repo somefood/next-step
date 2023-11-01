@@ -34,29 +34,34 @@ public class DispatcherServlet extends HttpServlet {
 
         handlerMappings.add(lhm);
         handlerMappings.add(ahm);
+
+        handlerAdapters.add(new AnnotationAdapter());
+        handlerAdapters.add(new ControllerAdapter());
     }
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
+            Object handler = null;
             ModelAndView mav = null;
             for (HandlerMapping handlerMapping : handlerMappings) {
                 if (handlerMapping.isSupport(req)) {
-
+                    handler = handlerMapping.getHandler(req);
+                    break;
                 }
             }
-            assert mav != null;
-            render(req, resp, mav);
 
-            Controller controller = lhm.findController(req.getRequestURI());
-            if (controller != null) {
-                render(req, resp, controller.execute(req, resp));
-            } else {
-                HandlerExecution he = ahm.getHandler(req);
-                if (he == null) {
-                    throw new ServletException("유효하지 않은 요청입니다.");
+            for (HandlerAdapter handlerAdapter : handlerAdapters) {
+                if (handlerAdapter.supports(handler)) {
+                    mav = handlerAdapter.getHandler(handler, req, resp);
+                    break;
                 }
-                render(req, resp, he.handle(req, resp));
+            }
+
+            if (mav != null) {
+                render(req, resp, mav);
+            } else {
+                throw new ServletException("유효하지 않은 요청입니다.");
             }
         } catch (Throwable e) {
             throw new ServletException(e.getMessage());

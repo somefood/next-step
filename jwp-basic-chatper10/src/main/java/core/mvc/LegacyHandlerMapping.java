@@ -38,6 +38,11 @@ public class LegacyHandlerMapping implements HandlerMapping {
         return controller != null;
     }
 
+    @Override
+    public Controller getHandler(HttpServletRequest request) {
+        return findController(request.getRequestURI());
+    }
+
     void initMapping() {
         mappings.put("/", new HomeController());
         mappings.put("/users/form", new ForwardController("/user/form.jsp"));
