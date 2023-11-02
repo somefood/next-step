@@ -33,14 +33,8 @@ public class LegacyHandlerMapping implements HandlerMapping {
     private Map<String, Controller> mappings = new HashMap<>();
 
     @Override
-    public boolean isSupport(HttpServletRequest request) {
-        Controller controller = findController(request.getRequestURI());
-        return controller != null;
-    }
-
-    @Override
     public Controller getHandler(HttpServletRequest request) {
-        return findController(request.getRequestURI());
+        return mappings.get(request.getRequestURI());
     }
 
     void initMapping() {

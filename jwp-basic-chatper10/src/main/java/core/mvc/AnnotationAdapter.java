@@ -9,12 +9,12 @@ import javax.servlet.http.HttpServletResponse;
 public class AnnotationAdapter implements HandlerAdapter {
 
     @Override
-    public boolean supports(Object object) {
-        return object instanceof HandlerExecution;
+    public boolean supports(Object handler) {
+        return handler instanceof HandlerExecution;
     }
 
     @Override
-    public ModelAndView getHandler(Object handler, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ModelAndView handle(Object handler, HttpServletRequest request, HttpServletResponse response) throws Exception {
         HandlerExecution execution = (HandlerExecution) handler;
         return execution.handle(request, response);
     }

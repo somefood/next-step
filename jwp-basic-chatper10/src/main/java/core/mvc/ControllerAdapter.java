@@ -6,12 +6,12 @@ import javax.servlet.http.HttpServletResponse;
 public class ControllerAdapter implements HandlerAdapter {
 
     @Override
-    public boolean supports(Object object) {
-        return object instanceof Controller;
+    public boolean supports(Object handler) {
+        return handler instanceof Controller;
     }
 
     @Override
-    public ModelAndView getHandler(Object handler, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ModelAndView handle(Object handler, HttpServletRequest request, HttpServletResponse response) throws Exception {
         Controller controller = (Controller) handler;
 
         return controller.execute(request, response);

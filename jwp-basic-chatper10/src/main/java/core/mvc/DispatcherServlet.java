@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import core.nmvc.AnnotationHandlerMapping;
-import core.nmvc.HandlerExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,23 +40,13 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        Object handler = getHandler(req);
+        if (handler == null) {
+            throw new IllegalArgumentException("존재하지 않는 URL입니다.");
+        }
+
         try {
-            Object handler = null;
-            ModelAndView mav = null;
-            for (HandlerMapping handlerMapping : handlerMappings) {
-                if (handlerMapping.isSupport(req)) {
-                    handler = handlerMapping.getHandler(req);
-                    break;
-                }
-            }
-
-            for (HandlerAdapter handlerAdapter : handlerAdapters) {
-                if (handlerAdapter.supports(handler)) {
-                    mav = handlerAdapter.getHandler(handler, req, resp);
-                    break;
-                }
-            }
-
+            ModelAndView mav = execute(handler, req, resp);
             if (mav != null) {
                 render(req, resp, mav);
             } else {
@@ -71,5 +60,24 @@ public class DispatcherServlet extends HttpServlet {
     private void render(HttpServletRequest req, HttpServletResponse resp, ModelAndView mav) throws Exception {
         View view = mav.getView();
         view.render(mav.getModel(), req, resp);
+    }
+
+    private Object getHandler(HttpServletRequest request) {
+        for (HandlerMapping handlerMapping : handlerMappings) {
+            Object handler = handlerMapping.getHandler(request);
+            if (handler != null) {
+                return handler;
+            }
+        }
+        return null;
+    }
+
+    private ModelAndView execute(Object handler, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        for (HandlerAdapter handlerAdapter : handlerAdapters) {
+            if (handlerAdapter.supports(handler)) {
+                return handlerAdapter.handle(handler, request, response);
+            }
+        }
+        return null;
     }
 }
